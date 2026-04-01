@@ -1,3 +1,3 @@
-﻿Build path: C:/MyGames/soidenya i prodavai/Builds/WebGL
-Build number: 8
+﻿Build path: C:/MyGames/Bakery-Merge/Builds/WebGL
+Build number: 9
 PluginYG version: 2.008

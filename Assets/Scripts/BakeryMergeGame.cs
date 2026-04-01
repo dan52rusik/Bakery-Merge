@@ -574,7 +574,7 @@ public sealed class BakeryMergeGame : MonoBehaviour
 
     private void HandlePointerInput()
     {
-        if (Touchscreen.current != null)
+        if (HasActiveTouchInput())
         {
             HandleTouchPointerInput();
             return;
@@ -618,6 +618,17 @@ public sealed class BakeryMergeGame : MonoBehaviour
         nextDropReadyTime = Time.time + DropCooldown;
         ChooseNextSpawnLevel();
         SaveProgressState();
+    }
+
+    private static bool HasActiveTouchInput()
+    {
+        if (Touchscreen.current == null)
+        {
+            return false;
+        }
+
+        var touch = Touchscreen.current.primaryTouch;
+        return touch.press.isPressed || touch.press.wasPressedThisFrame || touch.press.wasReleasedThisFrame;
     }
 
     private void HandleTouchPointerInput()
