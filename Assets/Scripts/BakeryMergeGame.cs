@@ -294,7 +294,7 @@ public sealed class BakeryMergeGame : MonoBehaviour
 
         // 5. Reward Button
         GUI.backgroundColor = new Color(1f, 0.85f, 0.35f, 1f);
-        if (GUILayout.Button(Localize("РЕКЛАМА\n+10 МОНЕТ", "WATCH AD\n+10 COINS"), buttonStyle, GUILayout.Width(80f), GUILayout.Height(52f)))
+        if (GUILayout.Button(Localize("СМОТРЕТЬ\nРЕКЛАМУ\n+10 МОНЕТ", "WATCH AD\n+10 COINS"), buttonStyle, GUILayout.Width(92f), GUILayout.Height(58f)))
         {
             YG2.RewardedAdvShow("FreeCoins", () =>
             {
@@ -1455,12 +1455,12 @@ public sealed class BakeryMergeGame : MonoBehaviour
     GUILayout.Space(24f); 
     
     // Large title in cream color
-    var headerStyle = new GUIStyle(titleStyle) { fontSize = 38, alignment = TextAnchor.MiddleCenter };
+    var headerStyle = new GUIStyle(titleStyle) { fontSize = 30, alignment = TextAnchor.MiddleCenter, wordWrap = true };
     var ivoryColor = new Color(1f, 0.96f, 0.88f);
     headerStyle.normal.textColor = ivoryColor;
     headerStyle.hover.textColor = ivoryColor;
     headerStyle.active.textColor = ivoryColor;
-    GUILayout.Label("BAKERY\nMERGE", headerStyle, GUILayout.Height(84f));
+    GUILayout.Label(Localize("Соедини и продавай сладости", "Merge and Sell Sweets"), headerStyle, GUILayout.Height(96f));
     
     GUILayout.Space(12f);
     
@@ -1503,7 +1503,7 @@ public sealed class BakeryMergeGame : MonoBehaviour
         // Little version footer in cream
         var footerStyle = new GUIStyle(miniStyle);
         footerStyle.normal.textColor = new Color(1f, 1f, 1f, 0.4f);
-        GUI.Label(new Rect(Screen.width * 0.5f - 120f, Screen.height - 40f, 240f, 24f), "Bakery Merge v1.2", footerStyle);
+        GUI.Label(new Rect(Screen.width * 0.5f - 120f, Screen.height - 40f, 240f, 24f), "OVERHEATGAMES", footerStyle);
     }
 
     private void DrawLanguageSelector()
