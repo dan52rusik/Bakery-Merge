@@ -64,6 +64,7 @@ public sealed class BakeryMergeGame : MonoBehaviour
     private bool savePending;
     private bool saveLeaderboardPending;
     private float nextSaveTime;
+    private bool touchDropBlockedByUi;
 
     private int[] inventoryCounts;
     private bool[] discoveredLevels;
@@ -573,6 +574,12 @@ public sealed class BakeryMergeGame : MonoBehaviour
 
     private void HandlePointerInput()
     {
+        if (Touchscreen.current != null)
+        {
+            HandleTouchPointerInput();
+            return;
+        }
+
         if (!WasPrimaryPointerPressed())
         {
             return;
@@ -606,6 +613,72 @@ public sealed class BakeryMergeGame : MonoBehaviour
         }
 
         var pointerWorld = mainCamera.ScreenToWorldPoint(pointerPosition.Value);
+        var spawnX = Mathf.Clamp(pointerWorld.x, -ArenaHalfWidth + 0.55f, ArenaHalfWidth - 0.55f);
+        SpawnSweet(nextSpawnLevel, new Vector2(spawnX, SpawnY));
+        nextDropReadyTime = Time.time + DropCooldown;
+        ChooseNextSpawnLevel();
+        SaveProgressState();
+    }
+
+    private void HandleTouchPointerInput()
+    {
+        var touch = Touchscreen.current?.primaryTouch;
+        if (touch == null)
+        {
+            return;
+        }
+
+        var pointerPosition = touch.position.ReadValue();
+        var guiPoint = new Vector2(pointerPosition.x, Screen.height - pointerPosition.y);
+
+        if (touch.press.wasPressedThisFrame)
+        {
+            touchDropBlockedByUi = IsPointerOverUi(guiPoint);
+
+            if (touchDropBlockedByUi)
+            {
+                return;
+            }
+
+            if (activeBooster != BoosterMode.None && hoveredItem != null)
+            {
+                ApplyBoosterToHovered();
+                touchDropBlockedByUi = true;
+            }
+
+            return;
+        }
+
+        if (!touch.press.wasReleasedThisFrame)
+        {
+            return;
+        }
+
+        var releaseOverUi = IsPointerOverUi(guiPoint);
+        var shouldBlockDrop = touchDropBlockedByUi || releaseOverUi;
+        touchDropBlockedByUi = false;
+
+        if (shouldBlockDrop)
+        {
+            return;
+        }
+
+        if (activeBooster != BoosterMode.None)
+        {
+            if (hoveredItem != null)
+            {
+                ApplyBoosterToHovered();
+            }
+
+            return;
+        }
+
+        if (Time.time < nextDropReadyTime)
+        {
+            return;
+        }
+
+        var pointerWorld = mainCamera.ScreenToWorldPoint(pointerPosition);
         var spawnX = Mathf.Clamp(pointerWorld.x, -ArenaHalfWidth + 0.55f, ArenaHalfWidth - 0.55f);
         SpawnSweet(nextSpawnLevel, new Vector2(spawnX, SpawnY));
         nextDropReadyTime = Time.time + DropCooldown;
