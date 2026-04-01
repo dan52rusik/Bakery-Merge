@@ -15,18 +15,16 @@ public sealed class BakeryMergeGame : MonoBehaviour
     public Font customUiFont;
 
     private const float ArenaHalfWidth = 3.6f;
-    private const float ArenaBottom = -4.9f;
-    private const float ArenaTop = 5.2f;
-    private const float SpawnY = 4.5f;
-    private const float WarningY = 3.85f;
+    private const float ArenaBottom = -4.15f;
+    private const float ArenaTop = 4.1f;
+    private const float SpawnY = 3.35f;
+    private const float WarningY = 2.95f;
     private const float GameOverDelay = 1.35f;
     private const float SaveDebounceDelay = 1.2f;
     private const string ScoreLeaderboardName = "BakeryScore";
 
     private readonly List<SweetDefinition> definitions = new();
     private readonly List<BakeryMergeItem> items = new();
-    private readonly Rect hudRect = new(16f, 16f, 360f, 196f);
-
     private PhysicsMaterial2D softPhysicsMaterial;
     private Sprite[] sweetSprites;
     private bool useCustomSweetSprites;
@@ -171,8 +169,7 @@ public sealed class BakeryMergeGame : MonoBehaviour
         }
         
         // --- 1. Top Header (Score, Progress, Coins) ---
-        var headerWidth = Mathf.Min(Screen.width * 0.95f, 450f);
-        var headerRect = new Rect(Screen.width * 0.5f - headerWidth * 0.5f, 16f, headerWidth, 84f);
+        var headerRect = GetHeaderRect();
         DrawModernPanel(headerRect, new Color(1f, 1f, 1f, 0.88f));
         
         GUILayout.BeginArea(headerRect);
@@ -182,21 +179,21 @@ public sealed class BakeryMergeGame : MonoBehaviour
         var headerValueStyle = new GUIStyle(titleStyle) { alignment = TextAnchor.MiddleCenter, fontSize = 24 };
 
         // 1. Score
-        GUILayout.BeginVertical(GUILayout.Width(headerWidth * 0.3f));
+        GUILayout.BeginVertical(GUILayout.Width(headerRect.width * 0.3f));
         GUILayout.Space(12f);
         GUILayout.Label(Localize("СЧЁТ", "SCORE"), miniStyle, GUILayout.Height(14f));
         GUILayout.Label($"{score}", headerValueStyle, GUILayout.Height(32f));
         GUILayout.EndVertical();
         
         // 2. Collection Progress
-        GUILayout.BeginVertical(GUILayout.Width(headerWidth * 0.3f));
+        GUILayout.BeginVertical(GUILayout.Width(headerRect.width * 0.3f));
         GUILayout.Space(12f);
         GUILayout.Label(Localize("ОТКРЫТО", "COLLECTED"), miniStyle, GUILayout.Height(14f));
         GUILayout.Label($"{discoveredCount}/{definitions.Count}", headerValueStyle, GUILayout.Height(32f));
         GUILayout.EndVertical();
         
         // 3. Coins
-        GUILayout.BeginVertical(GUILayout.Width(headerWidth * 0.3f));
+        GUILayout.BeginVertical(GUILayout.Width(headerRect.width * 0.3f));
         GUILayout.Space(12f);
         GUILayout.Label(Localize("МОНЕТЫ", "COINS"), miniStyle, GUILayout.Height(14f));
         GUILayout.Label($"● {coins}", headerValueStyle, GUILayout.Height(32f));
@@ -211,8 +208,8 @@ public sealed class BakeryMergeGame : MonoBehaviour
         // --- 2. Side Panel (Inventory/Shop) ---
         if (isShopOpen)
         {
-            var sidePanelWidth = Mathf.Min(Screen.width * 0.9f, 320f);
-            var sidePanelRect = new Rect(Screen.width * 0.5f - sidePanelWidth * 0.5f, 112f, sidePanelWidth, Screen.height - 300f);
+            var sidePanelRect = GetShopRect();
+            var sidePanelWidth = sidePanelRect.width;
             DrawModernPanel(sidePanelRect, new Color(1f, 0.96f, 0.94f, 0.95f));
             
             GUILayout.BeginArea(sidePanelRect);
@@ -253,8 +250,7 @@ public sealed class BakeryMergeGame : MonoBehaviour
         }
 
         // --- 3. Bottom Dock (Boosters & Actions) ---
-        var dockWidth = Mathf.Min(Screen.width * 0.98f, 520f);
-        var dockRect = new Rect(Screen.width * 0.5f - dockWidth * 0.5f, Screen.height - 104f, dockWidth, 88f);
+        var dockRect = GetDockRect();
         DrawModernPanel(dockRect, new Color(0.18f, 0.08f, 0.06f, 0.96f));
         
         GUILayout.BeginArea(dockRect);
@@ -314,7 +310,7 @@ public sealed class BakeryMergeGame : MonoBehaviour
         // Hint for active booster
         if (activeBooster != BoosterMode.None)
         {
-            var hintRect = new Rect(Screen.width * 0.5f - 150f, Screen.height - 150f, 300f, 32f);
+            var hintRect = GetBoosterHintRect();
             DrawModernPanel(hintRect, new Color(1f, 0.85f, 0.4f, 0.98f));
             var hintStyle = new GUIStyle(bodyStyle) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
             GUI.Label(hintRect, Localize($"Активно: {TranslateBooster(activeBooster)} - выберите цель", $"Active: {TranslateBooster(activeBooster)} - select target"), hintStyle);
@@ -323,7 +319,7 @@ public sealed class BakeryMergeGame : MonoBehaviour
         if (overflowTimer > 0f)
         {
             var danger = Mathf.Clamp01(overflowTimer / GameOverDelay);
-            var warnRect = new Rect(Screen.width * 0.5f - 180f, 104f, 360f, 40f);
+            var warnRect = GetWarningRect();
             GUI.color = new Color(1f, 0.2f, 0.1f, 0.4f + Mathf.PingPong(Time.time * 2f, 0.5f));
             GUI.DrawTexture(warnRect, roundedBoxSprite.texture);
             GUI.color = Color.white;
@@ -361,6 +357,34 @@ public sealed class BakeryMergeGame : MonoBehaviour
         GUI.color = c;
         GUI.DrawTexture(r, roundedBoxSprite.texture);
         GUI.color = oldColor;
+    }
+
+    private static Rect GetHeaderRect()
+    {
+        var width = Mathf.Min(Screen.width * 0.95f, 450f);
+        return new Rect(Screen.width * 0.5f - width * 0.5f, 16f, width, 84f);
+    }
+
+    private static Rect GetDockRect()
+    {
+        var width = Mathf.Min(Screen.width * 0.98f, 520f);
+        return new Rect(Screen.width * 0.5f - width * 0.5f, Screen.height - 104f, width, 88f);
+    }
+
+    private static Rect GetShopRect()
+    {
+        var width = Mathf.Min(Screen.width * 0.9f, 320f);
+        return new Rect(Screen.width * 0.5f - width * 0.5f, 112f, width, Screen.height - 300f);
+    }
+
+    private static Rect GetBoosterHintRect()
+    {
+        return new Rect(Screen.width * 0.5f - 150f, Screen.height - 150f, 300f, 32f);
+    }
+
+    private static Rect GetWarningRect()
+    {
+        return new Rect(Screen.width * 0.5f - 180f, 104f, 360f, 40f);
     }
 
     private void DrawBoosterButton(string title, int cost, string key, Action onClick, bool isSelected, bool canAfford)
@@ -1513,16 +1537,16 @@ public sealed class BakeryMergeGame : MonoBehaviour
 
     private bool IsPointerOverUi(Vector2 guiPoint)
     {
-        if (hudRect.Contains(guiPoint)) return true;
-        if (new Rect(Screen.width - 140f, 104f, 124f, 40f).Contains(guiPoint)) return true;
-        if (new Rect(Screen.width - 140f, 48f, 124f, 40f).Contains(guiPoint)) return true; // Rewarded video button
-        
+        if (GetHeaderRect().Contains(guiPoint)) return true;
+        if (GetDockRect().Contains(guiPoint)) return true;
+        if (activeBooster != BoosterMode.None && GetBoosterHintRect().Contains(guiPoint)) return true;
+        if (overflowTimer > 0f && GetWarningRect().Contains(guiPoint)) return true;
+
         if (isShopOpen)
         {
-            if (new Rect(Screen.width - 296f, 156f, 280f, Screen.height - 280f).Contains(guiPoint)) return true;
+            if (GetShopRect().Contains(guiPoint)) return true;
         }
-        
-        if (new Rect(16f, Screen.height - 48f, 180f, 32f).Contains(guiPoint)) return true;
+
         return false;
     }
 
